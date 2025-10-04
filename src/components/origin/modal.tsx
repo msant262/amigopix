@@ -1,9 +1,9 @@
-import * as React from "react"
-import { cva, type VariantProps } from "class-variance-authority"
-import { cn } from "@/lib/utils"
-import { motion, AnimatePresence } from "framer-motion"
-import { X } from "lucide-react"
-import { OriginButton } from "./button"
+import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
+import { X } from "lucide-react";
+import { OriginButton } from "./button";
 
 const originModalVariants = cva(
   "fixed inset-0 z-50 flex items-center justify-center p-4",
@@ -20,8 +20,8 @@ const originModalVariants = cva(
     defaultVariants: {
       size: "default",
     },
-  }
-)
+  },
+);
 
 const originModalContentVariants = cva(
   "relative w-full max-w-lg rounded-2xl border bg-background shadow-2xl",
@@ -38,58 +38,60 @@ const originModalContentVariants = cva(
     defaultVariants: {
       size: "default",
     },
-  }
-)
+  },
+);
 
 export interface OriginModalProps
   extends React.HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof originModalVariants> {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  title?: string
-  description?: string
-  showCloseButton?: boolean
-  closeOnOverlayClick?: boolean
-  loading?: boolean
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title?: string;
+  description?: string;
+  showCloseButton?: boolean;
+  closeOnOverlayClick?: boolean;
+  loading?: boolean;
 }
 
 const OriginModal = React.forwardRef<HTMLDivElement, OriginModalProps>(
-  ({ 
-    className, 
-    size,
-    open,
-    onOpenChange,
-    title,
-    description,
-    showCloseButton = true,
-    closeOnOverlayClick = true,
-    loading = false,
-    children,
-    ...props 
-  }, ref) => {
+  (
+    {
+      className,
+      size,
+      open,
+      onOpenChange,
+      title,
+      description,
+      showCloseButton = true,
+      closeOnOverlayClick = true,
+      loading = false,
+      children,
+    },
+    ref,
+  ) => {
     const handleOverlayClick = (e: React.MouseEvent) => {
       if (closeOnOverlayClick && e.target === e.currentTarget) {
-        onOpenChange(false)
+        onOpenChange(false);
       }
-    }
+    };
 
     React.useEffect(() => {
       const handleEscape = (e: KeyboardEvent) => {
         if (e.key === "Escape" && open) {
-          onOpenChange(false)
+          onOpenChange(false);
         }
-      }
+      };
 
       if (open) {
-        document.addEventListener("keydown", handleEscape)
-        document.body.style.overflow = "hidden"
+        document.addEventListener("keydown", handleEscape);
+        document.body.style.overflow = "hidden";
       }
 
       return () => {
-        document.removeEventListener("keydown", handleEscape)
-        document.body.style.overflow = "unset"
-      }
-    }, [open, onOpenChange])
+        document.removeEventListener("keydown", handleEscape);
+        document.body.style.overflow = "unset";
+      };
+    }, [open, onOpenChange]);
 
     return (
       <AnimatePresence>
@@ -102,7 +104,6 @@ const OriginModal = React.forwardRef<HTMLDivElement, OriginModalProps>(
             className={cn(originModalVariants({ size }), className)}
             onClick={handleOverlayClick}
             ref={ref}
-            {...props}
           >
             {/* Backdrop */}
             <motion.div
@@ -111,7 +112,7 @@ const OriginModal = React.forwardRef<HTMLDivElement, OriginModalProps>(
               exit={{ opacity: 0 }}
               className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             />
-            
+
             {/* Modal Content */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
@@ -135,7 +136,7 @@ const OriginModal = React.forwardRef<HTMLDivElement, OriginModalProps>(
                       </p>
                     )}
                   </div>
-                  
+
                   {showCloseButton && (
                     <OriginButton
                       variant="ghost"
@@ -148,19 +149,17 @@ const OriginModal = React.forwardRef<HTMLDivElement, OriginModalProps>(
                   )}
                 </div>
               )}
-              
+
               {/* Content */}
-              <div className="p-6">
-                {children}
-              </div>
+              <div className="p-6">{children}</div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    )
-  }
-)
-OriginModal.displayName = "OriginModal"
+    );
+  },
+);
+OriginModal.displayName = "OriginModal";
 
 const OriginModalHeader = React.forwardRef<
   HTMLDivElement,
@@ -168,23 +167,29 @@ const OriginModalHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 text-center sm:text-left", className)}
+    className={cn(
+      "flex flex-col space-y-1.5 text-center sm:text-left",
+      className,
+    )}
     {...props}
   />
-))
-OriginModalHeader.displayName = "OriginModalHeader"
+));
+OriginModalHeader.displayName = "OriginModalHeader";
 
 const OriginModalTitle = React.forwardRef<
-  HTMLParagraphElement,
+  HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h2
     ref={ref}
-    className={cn("text-lg font-semibold leading-none tracking-tight", className)}
+    className={cn(
+      "text-lg font-semibold leading-none tracking-tight",
+      className,
+    )}
     {...props}
   />
-))
-OriginModalTitle.displayName = "OriginModalTitle"
+));
+OriginModalTitle.displayName = "OriginModalTitle";
 
 const OriginModalDescription = React.forwardRef<
   HTMLParagraphElement,
@@ -195,16 +200,16 @@ const OriginModalDescription = React.forwardRef<
     className={cn("text-sm text-muted-foreground", className)}
     {...props}
   />
-))
-OriginModalDescription.displayName = "OriginModalDescription"
+));
+OriginModalDescription.displayName = "OriginModalDescription";
 
 const OriginModalContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div ref={ref} className={cn("mt-4", className)} {...props} />
-))
-OriginModalContent.displayName = "OriginModalContent"
+));
+OriginModalContent.displayName = "OriginModalContent";
 
 const OriginModalFooter = React.forwardRef<
   HTMLDivElement,
@@ -212,11 +217,14 @@ const OriginModalFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-6", className)}
+    className={cn(
+      "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 pt-6",
+      className,
+    )}
     {...props}
   />
-))
-OriginModalFooter.displayName = "OriginModalFooter"
+));
+OriginModalFooter.displayName = "OriginModalFooter";
 
 export {
   OriginModal,
@@ -225,4 +233,4 @@ export {
   OriginModalTitle,
   OriginModalDescription,
   OriginModalContent,
-}
+};

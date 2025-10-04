@@ -1,5 +1,6 @@
 {
-  "name": "cyberflix-emprestimos",
+  "homepage": "https://www.cyberflix.com.br",
+  "name": "Amigo Pix",
   "private": true,
   "version": "1.0.0",
   "type": "module",

@@ -1,0 +1,79 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'administrador';
+    }
+    
+    function isClient() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'cliente';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+      allow read: if isAuthenticated(); // Admins can read all users
+    }
+
+    // Clientes collection
+    match /clientes/{clienteId} {
+      allow read, write: if isAdmin();
+      allow read: if isClient();
+    }
+
+    // Empréstimos collection
+    match /emprestimos/{emprestimoId} {
+      allow read, write: if isAdmin();
+      allow read: if isClient() && 
+        resource.data.clienteId == request.auth.uid;
+      allow create: if isAdmin();
+      allow update: if isAdmin() || 
+        (isClient() && resource.data.clienteId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // Pagamentos collection
+    match /pagamentos/{pagamentoId} {
+      allow read, write: if isAdmin();
+      allow read: if isClient() && 
+        exists(/databases/$(database)/documents/emprestimos/$(resource.data.emprestimoId)) &&
+        get(/databases/$(database)/documents/emprestimos/$(resource.data.emprestimoId)).data.clienteId == request.auth.uid;
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Conteúdos collection
+    match /conteudos/{conteudoId} {
+      allow read: if resource.data.visibilidade == 'publico' ||
+        (isAdmin() && resource.data.visibilidade == 'administradores') ||
+        (isAuthenticated() && resource.data.visibilidade == 'clientes');
+      allow write: if isAdmin();
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // Allow read access to all collections for authenticated users
+    // but enforce write permissions based on roles
+    match /{document=**} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

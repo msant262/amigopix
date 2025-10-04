@@ -12,7 +12,6 @@ import {
   Image,
   Video,
   User,
-  Calendar,
   Globe,
   Lock,
   ExternalLink

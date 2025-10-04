@@ -12,6 +12,7 @@ interface ModernCardProps {
   gradient?: boolean;
   icon?: React.ReactNode;
   delay?: number;
+  onClick?: () => void;
 }
 
 export const ModernCard: React.FC<ModernCardProps> = ({
@@ -22,7 +23,8 @@ export const ModernCard: React.FC<ModernCardProps> = ({
   hover = true,
   gradient = true,
   icon,
-  delay = 0
+  delay = 0,
+  onClick: _onClick
 }) => {
   return (
     <motion.div

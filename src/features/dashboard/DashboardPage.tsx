@@ -1,39 +1,37 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { ModernCard, StatCard } from '@/components/ui/modern-card';
-import { ModernButton } from '@/components/ui/modern-button';
-import { Loading } from '@/components/ui/loading';
+import React, { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { ModernCard, StatCard } from "@/components/ui/modern-card";
+import { Loading } from "@/components/ui/loading";
 import { TimeRangeFilter, TimeRangeDisplay, TimeRange } from '@/components/ui/time-range-filter';
-import { formatCurrency, formatDate, getStatusColor, getStatusText } from '@/lib/utils';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  DollarSign, 
-  CreditCard, 
-  Users, 
+import { formatCurrency } from '@/lib/utils';
+import {
+  TrendingUp,
+  DollarSign,
+  CreditCard,
+  Users,
   AlertTriangle,
   Calendar,
   BarChart3,
   PieChart
 } from 'lucide-react';
-import { DashboardKPIs, Emprestimo } from '@/types';
-import { getDashboardKPIs } from '@/lib/firebase/firestore';
-import { ProximosVencimentos } from './ProximosVencimentos';
-import { TabelaVencimentos } from './TabelaVencimentos';
-import { GraficosDashboard } from './GraficosDashboard';
-import { GraficoEvolucaoTemporal } from './GraficoEvolucaoTemporal';
+import { getDashboardKPIs } from "@/lib/firebase/firestore";
+import { ProximosVencimentos } from "./ProximosVencimentos";
+import { TabelaVencimentos } from "./TabelaVencimentos";
+import { GraficosDashboard } from "./GraficosDashboard";
 
 export const DashboardPage: React.FC = () => {
   const { user } = useAuth();
-  const [timeRange, setTimeRange] = useState<TimeRange>('all');
+  const [timeRange, setTimeRange] = useState<TimeRange>("all");
 
-  const { data: kpis, isLoading, error } = useQuery({
-    queryKey: ['dashboard-kpis', user?.uid, timeRange],
-    queryFn: () => getDashboardKPIs(user?.role || 'cliente', user?.uid, timeRange),
+  const {
+    data: kpis,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["dashboard-kpis", user?.uid, timeRange],
+    queryFn: () =>
+      getDashboardKPIs(user?.role || "cliente", user?.uid, timeRange),
     enabled: !!user,
     refetchInterval: 30000, // Refetch every 30 seconds
   });
@@ -41,7 +39,7 @@ export const DashboardPage: React.FC = () => {
   // Calcular juros do período baseado no timeRange
   const getJurosDoPeriodo = () => {
     if (!kpis) return 0;
-    
+
     // Para simplificar, vamos usar o valor total de juros acumulados
     // que já está filtrado pelo timeRange na função getDashboardKPIs
     return kpis.valorJurosTotal;
@@ -49,18 +47,18 @@ export const DashboardPage: React.FC = () => {
 
   const getPeriodoDescription = () => {
     switch (timeRange) {
-      case '1d':
-        return 'Juros acumulados hoje';
-      case '7d':
-        return 'Juros acumulados na semana';
-      case '30d':
-        return 'Juros acumulados no mês';
-      case '90d':
-        return 'Juros acumulados no trimestre';
-      case 'all':
-        return 'Juros acumulados totais';
+      case "1d":
+        return "Juros acumulados hoje";
+      case "7d":
+        return "Juros acumulados na semana";
+      case "30d":
+        return "Juros acumulados no mês";
+      case "90d":
+        return "Juros acumulados no trimestre";
+      case "all":
+        return "Juros acumulados totais";
       default:
-        return 'Juros acumulados no período';
+        return "Juros acumulados no período";
     }
   };
 
@@ -82,67 +80,68 @@ export const DashboardPage: React.FC = () => {
 
   const kpiCards = [
     {
-      title: 'Saldo Total Emprestado',
+      title: "Saldo Total Emprestado",
       value: formatCurrency(kpis.saldoTotalEmprestado),
       icon: DollarSign,
-      trend: kpis.saldoTotalEmprestado > 0 ? 'up' : 'neutral',
-      description: 'Valor total em aberto',
-      color: 'text-primary',
+      trend: kpis.saldoTotalEmprestado > 0 ? "up" : "neutral",
+      description: "Valor total em aberto",
+      color: "text-primary",
     },
     {
-      title: 'Total a Receber',
+      title: "Total a Receber",
       value: formatCurrency(kpis.totalAReceber),
       icon: TrendingUp,
-      trend: 'up',
-      description: 'Valor emprestado + juros futuros',
-      color: 'text-accent',
+      trend: "up",
+      description: "Valor emprestado + juros futuros",
+      color: "text-accent",
     },
     {
-      title: 'Juros do Período',
+      title: "Juros do Período",
       value: formatCurrency(getJurosDoPeriodo()),
       icon: BarChart3,
-      trend: getJurosDoPeriodo() > 0 ? 'up' : 'neutral',
+      trend: getJurosDoPeriodo() > 0 ? "up" : "neutral",
       description: getPeriodoDescription(),
-      color: 'text-secondary',
+      color: "text-secondary",
     },
     {
-      title: 'Juros Totais',
+      title: "Juros Totais",
       value: formatCurrency(kpis.valorTotalEmprestado - kpis.totalAReceber),
       icon: Calendar,
-      trend: (kpis.valorTotalEmprestado - kpis.totalAReceber) > 0 ? 'up' : 'neutral',
-      description: 'Total emprestado - Total a receber',
-      color: 'text-violet-500',
+      trend:
+        kpis.valorTotalEmprestado - kpis.totalAReceber > 0 ? "up" : "neutral",
+      description: "Total emprestado - Total a receber",
+      color: "text-violet-500",
     },
   ];
 
   const statsCards = [
     {
-      title: 'Empréstimos Ativos',
+      title: "Empréstimos Ativos",
       value: kpis.emprestimosAtivos.toString(),
       icon: CreditCard,
-      color: 'text-accent',
-      bgColor: 'bg-accent/10',
+      color: "text-accent",
+      bgColor: "bg-accent/10",
     },
     {
-      title: 'Empréstimos Atrasados',
+      title: "Empréstimos Atrasados",
       value: kpis.emprestimosAtrasados.toString(),
       icon: AlertTriangle,
-      color: 'text-destructive',
-      bgColor: 'bg-destructive/10',
+      color: "text-destructive",
+      bgColor: "bg-destructive/10",
     },
     {
-      title: 'Empréstimos Quitados',
+      title: "Empréstimos Quitados",
       value: kpis.emprestimosQuitados.toString(),
       icon: TrendingUp,
-      color: 'text-secondary',
-      bgColor: 'bg-secondary/10',
+      color: "text-secondary",
+      bgColor: "bg-secondary/10",
     },
     {
-      title: 'Total de Empréstimos',
+      title: "Total de Empréstimos",
       value: kpis.totalEmprestimos.toString(),
       icon: Users,
-      color: 'text-primary',
-      bgColor: 'bg-primary/10',
+      color: "text-primary",
+      bgColor: "bg-primary/10",
     },
   ];
 
@@ -151,13 +150,15 @@ export const DashboardPage: React.FC = () => {
       {/* Header */}
       <div className="flex flex-col gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gradient">
+            Dashboard
+          </h1>
           <p className="text-sm sm:text-base text-muted-foreground">
             Visão geral dos seus empréstimos e estatísticas
             <TimeRangeDisplay value={timeRange} className="ml-2" />
           </p>
         </div>
-        
+
         {/* Time Range Selector */}
         <TimeRangeFilter
           value={timeRange}
@@ -178,7 +179,7 @@ export const DashboardPage: React.FC = () => {
               value={card.value}
               description={card.description}
               icon={<Icon className="h-6 w-6" />}
-              trend={card.trend}
+              trend={card.trend as "up" | "down" | "neutral"}
               color={card.color}
               delay={index * 0.1}
             />
@@ -236,7 +237,9 @@ export const DashboardPage: React.FC = () => {
         icon={<BarChart3 className="h-5 w-5" />}
         delay={0.4}
       >
-        <GraficoEvolucaoTemporal kpis={kpis} timeRange={timeRange} />
+        <div className="h-64 w-full flex items-center justify-center text-muted-foreground">
+          Gráfico de evolução temporal em desenvolvimento
+        </div>
       </ModernCard>
     </div>
   );

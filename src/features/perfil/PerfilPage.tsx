@@ -20,11 +20,8 @@ import {
   Save,
   Loader2,
   Shield,
-  Eye,
-  EyeOff,
   Lock
 } from 'lucide-react';
-import { UserProfile } from '@/types';
 import { updateUserProfile } from '@/lib/firebase/auth';
 import toast from 'react-hot-toast';
 
@@ -41,10 +38,9 @@ export const PerfilPage: React.FC = () => {
   const { user, userProfile, signOut, resetPassword } = useAuth();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('profile');
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch } = useForm<ProfileFormValues>({
+  const { register, handleSubmit, formState: { errors } } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
       nome: userProfile?.nome || '',
@@ -55,7 +51,7 @@ export const PerfilPage: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: updateUserProfile,
+    mutationFn: ({ uid, data }: { uid: string; data: ProfileFormValues }) => updateUserProfile(uid, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       toast.success('Perfil atualizado com sucesso!');
@@ -68,7 +64,7 @@ export const PerfilPage: React.FC = () => {
   const onSubmit = async (data: ProfileFormValues) => {
     try {
       setIsSubmitting(true);
-      await updateMutation.mutateAsync(user!.uid, data);
+      await updateMutation.mutateAsync({ uid: user!.uid, data });
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
     } finally {

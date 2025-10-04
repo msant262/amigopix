@@ -8,7 +8,6 @@ import {
   updateUserProfile,
   getUserProfile,
   onAuthStateChanged,
-  getCurrentUser,
 } from '@/lib/firebase/auth';
 import { User, UserProfile, AuthContextType } from '@/types';
 

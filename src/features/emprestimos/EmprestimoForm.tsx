@@ -1,33 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
-import { EmprestimoFormData, PeriodicidadeJuros, TipoJuros } from '@/types';
-import { createEmprestimo, updateEmprestimo, getEmprestimo } from '@/lib/firebase/firestore';
-import { getClientes } from '@/lib/firebase/firestore';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ArrowLeft, Save, Loader2 } from "lucide-react";
+import { EmprestimoFormData, PeriodicidadeJuros, TipoJuros } from "@/types";
+import {
+  createEmprestimo,
+  updateEmprestimo,
+  getEmprestimo,
+} from "@/lib/firebase/firestore";
+import { getClientes } from "@/lib/firebase/firestore";
+import toast from "react-hot-toast";
 
 const emprestimoSchema = z.object({
-  clienteId: z.string().min(1, 'Cliente é obrigatório'),
-  principal: z.number().min(0.01, 'Valor deve ser maior que zero'),
-  taxaJuros: z.number().min(0, 'Taxa de juros deve ser positiva'),
-  periodicidadeJuros: z.enum(['mensal', 'anual']),
-  tipoJuros: z.enum(['simples', 'composto']),
+  clienteId: z.string().min(1, "Cliente é obrigatório"),
+  principal: z.number().min(0.01, "Valor deve ser maior que zero"),
+  taxaJuros: z.number().min(0, "Taxa de juros deve ser positiva"),
+  periodicidadeJuros: z.enum(["mensal", "anual"]),
+  tipoJuros: z.enum(["simples", "composto"]),
   dataInicio: z.union([z.date(), z.string()]).transform((val) => {
-    if (typeof val === 'string') return new Date(val);
+    if (typeof val === "string") return new Date(val);
     return val;
   }),
   dataVencimento: z.union([z.date(), z.string()]).transform((val) => {
-    if (typeof val === 'string') return new Date(val);
+    if (typeof val === "string") return new Date(val);
     return val;
   }),
   parcelas: z.number().optional(),
@@ -44,31 +59,38 @@ export const EmprestimoForm: React.FC = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { register, handleSubmit, formState: { errors }, setValue, watch, reset } = useForm<EmprestimoFormValues>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    reset,
+  } = useForm<EmprestimoFormValues>({
     resolver: zodResolver(emprestimoSchema),
     defaultValues: {
-      clienteId: '',
+      clienteId: "",
       principal: 0,
       taxaJuros: 0,
-      periodicidadeJuros: 'mensal',
-      tipoJuros: 'simples',
-      dataInicio: new Date().toISOString().split('T')[0],
-      dataVencimento: new Date().toISOString().split('T')[0],
+      periodicidadeJuros: "mensal",
+      tipoJuros: "simples",
+      dataInicio: new Date(),
+      dataVencimento: new Date(),
       parcelas: undefined,
-      observacoes: '',
+      observacoes: "",
     },
   });
 
   // Fetch emprestimo data if editing
   const { data: emprestimoData } = useQuery({
-    queryKey: ['emprestimo', id],
+    queryKey: ["emprestimo", id],
     queryFn: () => getEmprestimo(id!),
     enabled: isEditing && Boolean(id),
   });
 
   // Fetch clientes for select
   const { data: clientesData } = useQuery({
-    queryKey: ['clientes-select'],
+    queryKey: ["clientes-select"],
     queryFn: () => getClientes({}, 1000),
   });
 
@@ -76,14 +98,16 @@ export const EmprestimoForm: React.FC = () => {
   useEffect(() => {
     if (emprestimoData && isEditing) {
       // Converter datas para o formato esperado pelos inputs
-      const dataInicioStr = emprestimoData.dataInicio instanceof Date 
-        ? emprestimoData.dataInicio.toISOString().split('T')[0]
-        : new Date(emprestimoData.dataInicio).toISOString().split('T')[0];
-        
-      const dataVencimentoStr = emprestimoData.dataVencimento instanceof Date 
-        ? emprestimoData.dataVencimento.toISOString().split('T')[0]
-        : new Date(emprestimoData.dataVencimento).toISOString().split('T')[0];
-      
+      const dataInicioStr =
+        emprestimoData.dataInicio instanceof Date
+          ? emprestimoData.dataInicio.toISOString().split("T")[0]
+          : new Date(emprestimoData.dataInicio).toISOString().split("T")[0];
+
+      const dataVencimentoStr =
+        emprestimoData.dataVencimento instanceof Date
+          ? emprestimoData.dataVencimento.toISOString().split("T")[0]
+          : new Date(emprestimoData.dataVencimento).toISOString().split("T")[0];
+
       reset({
         clienteId: emprestimoData.clienteId,
         principal: emprestimoData.principal,
@@ -93,7 +117,7 @@ export const EmprestimoForm: React.FC = () => {
         dataInicio: dataInicioStr as any,
         dataVencimento: dataVencimentoStr as any,
         parcelas: emprestimoData.parcelas,
-        observacoes: emprestimoData.observacoes || '',
+        observacoes: emprestimoData.observacoes || "",
       });
     }
   }, [emprestimoData, isEditing, reset]);
@@ -101,33 +125,38 @@ export const EmprestimoForm: React.FC = () => {
   // Garantir que o cliente seja selecionado após os dados carregarem
   useEffect(() => {
     if (emprestimoData?.clienteId && clientesData?.clientes && isEditing) {
-      setValue('clienteId', emprestimoData.clienteId);
+      setValue("clienteId", emprestimoData.clienteId);
     }
   }, [emprestimoData?.clienteId, clientesData?.clientes, isEditing, setValue]);
 
   const createMutation = useMutation({
     mutationFn: createEmprestimo,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['emprestimos'] });
-      toast.success('Empréstimo criado com sucesso!');
-      navigate('/emprestimos');
+      queryClient.invalidateQueries({ queryKey: ["emprestimos"] });
+      toast.success("Empréstimo criado com sucesso!");
+      navigate("/emprestimos");
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Erro ao criar empréstimo');
+      toast.error(error.message || "Erro ao criar empréstimo");
     },
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<EmprestimoFormData> }) =>
-      updateEmprestimo(id, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<EmprestimoFormData>;
+    }) => updateEmprestimo(id, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['emprestimos'] });
-      queryClient.invalidateQueries({ queryKey: ['emprestimo', id] });
-      toast.success('Empréstimo atualizado com sucesso!');
-      navigate('/emprestimos');
+      queryClient.invalidateQueries({ queryKey: ["emprestimos"] });
+      queryClient.invalidateQueries({ queryKey: ["emprestimo", id] });
+      toast.success("Empréstimo atualizado com sucesso!");
+      navigate("/emprestimos");
     },
     onError: (error: any) => {
-      toast.error(error.message || 'Erro ao atualizar empréstimo');
+      toast.error(error.message || "Erro ao atualizar empréstimo");
     },
   });
 
@@ -141,27 +170,27 @@ export const EmprestimoForm: React.FC = () => {
         await createMutation.mutateAsync(data);
       }
     } catch (error) {
-      console.error('Erro ao salvar empréstimo:', error);
+      console.error("Erro ao salvar empréstimo:", error);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const watchPrincipal = watch('principal');
-  const watchTaxaJuros = watch('taxaJuros');
-  const watchTipoJuros = watch('tipoJuros');
-  const watchPeriodicidadeJuros = watch('periodicidadeJuros');
+  const watchPrincipal = watch("principal");
+  const watchTaxaJuros = watch("taxaJuros");
+  const watchTipoJuros = watch("tipoJuros");
+  const watchPeriodicidadeJuros = watch("periodicidadeJuros");
 
   // Calculate estimated interest (simplified)
   const calculateEstimatedInterest = () => {
     if (!watchPrincipal || !watchTaxaJuros) return 0;
-    
+
     const principal = watchPrincipal;
     const taxa = watchTaxaJuros / 100;
-    const periodicidade = watchPeriodicidadeJuros === 'anual' ? 365 : 30;
+    const periodicidade = watchPeriodicidadeJuros === "anual" ? 365 : 30;
     const dias = 30; // Simplified calculation for 30 days
-    
-    if (watchTipoJuros === 'simples') {
+
+    if (watchTipoJuros === "simples") {
       return principal * taxa * (dias / periodicidade);
     } else {
       return principal * (Math.pow(1 + taxa, dias / periodicidade) - 1);
@@ -175,17 +204,19 @@ export const EmprestimoForm: React.FC = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => navigate('/emprestimos')}
+          onClick={() => navigate("/emprestimos")}
           className="touch-target"
         >
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
           <h1 className="text-3xl font-bold text-gradient">
-            {isEditing ? 'Editar Empréstimo' : 'Novo Empréstimo'}
+            {isEditing ? "Editar Empréstimo" : "Novo Empréstimo"}
           </h1>
           <p className="text-muted-foreground">
-            {isEditing ? 'Atualize as informações do empréstimo' : 'Crie um novo empréstimo'}
+            {isEditing
+              ? "Atualize as informações do empréstimo"
+              : "Crie um novo empréstimo"}
           </p>
         </div>
       </div>
@@ -206,8 +237,8 @@ export const EmprestimoForm: React.FC = () => {
                 <div className="space-y-2">
                   <Label htmlFor="clienteId">Cliente *</Label>
                   <Select
-                    value={watch('clienteId') || ''}
-                    onValueChange={(value) => setValue('clienteId', value)}
+                    value={watch("clienteId") || ""}
+                    onValueChange={(value) => setValue("clienteId", value)}
                   >
                     <SelectTrigger className="touch-target">
                       <SelectValue placeholder="Selecione um cliente" />
@@ -221,7 +252,9 @@ export const EmprestimoForm: React.FC = () => {
                     </SelectContent>
                   </Select>
                   {errors.clienteId && (
-                    <p className="text-sm text-destructive">{errors.clienteId.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.clienteId.message}
+                    </p>
                   )}
                 </div>
               </CardContent>
@@ -243,12 +276,14 @@ export const EmprestimoForm: React.FC = () => {
                     type="number"
                     step="0.01"
                     min="0"
-                    {...register('principal', { valueAsNumber: true })}
+                    {...register("principal", { valueAsNumber: true })}
                     className="touch-target"
                     placeholder="0,00"
                   />
                   {errors.principal && (
-                    <p className="text-sm text-destructive">{errors.principal.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.principal.message}
+                    </p>
                   )}
                 </div>
 
@@ -259,12 +294,14 @@ export const EmprestimoForm: React.FC = () => {
                     type="number"
                     step="0.01"
                     min="0"
-                    {...register('taxaJuros', { valueAsNumber: true })}
+                    {...register("taxaJuros", { valueAsNumber: true })}
                     className="touch-target"
                     placeholder="0,00"
                   />
                   {errors.taxaJuros && (
-                    <p className="text-sm text-destructive">{errors.taxaJuros.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.taxaJuros.message}
+                    </p>
                   )}
                 </div>
 
@@ -272,8 +309,13 @@ export const EmprestimoForm: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="periodicidadeJuros">Periodicidade *</Label>
                     <Select
-                      value={watch('periodicidadeJuros')}
-                      onValueChange={(value) => setValue('periodicidadeJuros', value as PeriodicidadeJuros)}
+                      value={watch("periodicidadeJuros")}
+                      onValueChange={(value) =>
+                        setValue(
+                          "periodicidadeJuros",
+                          value as PeriodicidadeJuros,
+                        )
+                      }
                     >
                       <SelectTrigger className="touch-target">
                         <SelectValue />
@@ -288,8 +330,10 @@ export const EmprestimoForm: React.FC = () => {
                   <div className="space-y-2">
                     <Label htmlFor="tipoJuros">Tipo de Juros *</Label>
                     <Select
-                      value={watch('tipoJuros')}
-                      onValueChange={(value) => setValue('tipoJuros', value as TipoJuros)}
+                      value={watch("tipoJuros")}
+                      onValueChange={(value) =>
+                        setValue("tipoJuros", value as TipoJuros)
+                      }
                     >
                       <SelectTrigger className="touch-target">
                         <SelectValue />
@@ -321,11 +365,13 @@ export const EmprestimoForm: React.FC = () => {
                   <Input
                     id="dataInicio"
                     type="date"
-                    {...register('dataInicio', { valueAsDate: true })}
+                    {...register("dataInicio")}
                     className="touch-target"
                   />
                   {errors.dataInicio && (
-                    <p className="text-sm text-destructive">{errors.dataInicio.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.dataInicio.message}
+                    </p>
                   )}
                 </div>
 
@@ -334,11 +380,13 @@ export const EmprestimoForm: React.FC = () => {
                   <Input
                     id="dataVencimento"
                     type="date"
-                    {...register('dataVencimento', { valueAsDate: true })}
+                    {...register("dataVencimento")}
                     className="touch-target"
                   />
                   {errors.dataVencimento && (
-                    <p className="text-sm text-destructive">{errors.dataVencimento.message}</p>
+                    <p className="text-sm text-destructive">
+                      {errors.dataVencimento.message}
+                    </p>
                   )}
                 </div>
 
@@ -348,7 +396,7 @@ export const EmprestimoForm: React.FC = () => {
                     id="parcelas"
                     type="number"
                     min="1"
-                    {...register('parcelas', { valueAsNumber: true })}
+                    {...register("parcelas", { valueAsNumber: true })}
                     className="touch-target"
                     placeholder="Número de parcelas"
                   />
@@ -370,7 +418,10 @@ export const EmprestimoForm: React.FC = () => {
                     <div className="flex justify-between">
                       <span>Valor Emprestado:</span>
                       <span className="font-medium">
-                        R$ {watchPrincipal.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R${" "}
+                        {watchPrincipal.toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -379,13 +430,18 @@ export const EmprestimoForm: React.FC = () => {
                     </div>
                     <div className="flex justify-between">
                       <span>Tipo:</span>
-                      <span className="font-medium capitalize">{watchTipoJuros}</span>
+                      <span className="font-medium capitalize">
+                        {watchTipoJuros}
+                      </span>
                     </div>
                     <hr className="border-border" />
                     <div className="flex justify-between font-semibold">
                       <span>Juros estimados (30 dias):</span>
                       <span className="text-accent">
-                        R$ {calculateEstimatedInterest().toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                        R${" "}
+                        {calculateEstimatedInterest().toLocaleString("pt-BR", {
+                          minimumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   </div>
@@ -406,7 +462,7 @@ export const EmprestimoForm: React.FC = () => {
                   <Label htmlFor="observacoes">Observações</Label>
                   <textarea
                     id="observacoes"
-                    {...register('observacoes')}
+                    {...register("observacoes")}
                     className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Observações sobre o empréstimo..."
                   />
@@ -421,7 +477,7 @@ export const EmprestimoForm: React.FC = () => {
           <Button
             type="button"
             variant="outline"
-            onClick={() => navigate('/emprestimos')}
+            onClick={() => navigate("/emprestimos")}
             className="touch-target"
           >
             Cancelar
@@ -439,7 +495,7 @@ export const EmprestimoForm: React.FC = () => {
             ) : (
               <>
                 <Save className="mr-2 h-4 w-4" />
-                {isEditing ? 'Atualizar' : 'Criar'} Empréstimo
+                {isEditing ? "Atualizar" : "Criar"} Empréstimo
               </>
             )}
           </Button>

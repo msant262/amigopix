@@ -37,7 +37,7 @@ export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
   if (variant === 'pills') {
     return (
       <div className={cn("flex items-center space-x-1", className)}>
-        {timeRangeOptions.map((option, index) => (
+        {timeRangeOptions.map((option) => (
           <motion.button
             key={option.value}
             onClick={() => onChange(option.value)}
@@ -50,7 +50,7 @@ export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
             )}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: index * 0.05, duration: 0.2 }}
+            transition={{ duration: 0.2 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
@@ -64,14 +64,13 @@ export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
   if (variant === 'compact') {
     return (
       <div className={cn("flex items-center space-x-1", className)}>
-        {timeRangeOptions.map((option, index) => (
+        {timeRangeOptions.map((option) => (
           <ModernButton
             key={option.value}
             variant={value === option.value ? 'gradient' : 'ghost'}
-            size={size}
+            size={size as "default" | "sm" | "lg" | "icon"}
             onClick={() => onChange(option.value)}
             className={cn(sizes[size], "whitespace-nowrap")}
-            delay={index * 0.05}
           >
             {option.shortLabel}
           </ModernButton>
@@ -85,14 +84,13 @@ export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({
     <div className={cn("flex items-center justify-center sm:justify-start", className)}>
       <div className="flex items-center space-x-1 bg-muted/50 backdrop-blur-sm rounded-lg p-1 border border-border/50 overflow-x-auto">
         <div className="flex space-x-1 min-w-max">
-          {timeRangeOptions.map((option, index) => (
+          {timeRangeOptions.map((option) => (
             <ModernButton
               key={option.value}
               variant={value === option.value ? 'gradient' : 'ghost'}
-              size={size}
+              size={size as "default" | "sm" | "lg" | "icon"}
               onClick={() => onChange(option.value)}
               className={cn(sizes[size], "whitespace-nowrap flex-shrink-0")}
-              delay={index * 0.05}
             >
               {option.label}
             </ModernButton>

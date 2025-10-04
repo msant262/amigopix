@@ -7,8 +7,6 @@ import {
   OriginCardContent,
   OriginInput,
   OriginModal,
-  OriginModalHeader,
-  OriginModalTitle,
   OriginModalContent,
   OriginModalFooter,
   OriginBadge 
@@ -194,7 +192,7 @@ export function OriginComponentsDemo() {
                 Deletar Parcela
               </OriginButton>
               
-              <OriginButton variant="primary" size="sm">
+              <OriginButton variant="default" size="sm">
                 <Plus className="h-4 w-4 mr-2" />
                 Cadastrar Pagamento
               </OriginButton>
